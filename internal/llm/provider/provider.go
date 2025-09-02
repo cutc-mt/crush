@@ -140,6 +140,8 @@ func WithMaxTokens(maxTokens int64) ProviderClientOption {
 }
 
 func NewProvider(cfg config.ProviderConfig, opts ...ProviderClientOption) (Provider, error) {
+	fmt.Printf("DEBUG: NewProvider called with provider_id=[%s] and provider_type=[%s]\n", cfg.ID, cfg.Type)
+
 	restore := config.PushPopCrushEnv()
 	defer restore()
 	resolvedAPIKey, err := config.Get().Resolve(cfg.APIKey)
