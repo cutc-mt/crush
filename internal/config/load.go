@@ -176,12 +176,18 @@ func (c *Config) configureProviders(env env.Env, resolver VariableResolver, know
 		if len(config.ExtraHeaders) > 0 {
 			maps.Copy(headers, config.ExtraHeaders)
 		}
+
+		finalType := p.Type
+		if configExists && config.Type != "" {
+			finalType = config.Type
+		}
+
 		prepared := ProviderConfig{
 			ID:                 string(p.ID),
 			Name:               p.Name,
 			BaseURL:            p.APIEndpoint,
 			APIKey:             p.APIKey,
-			Type:               p.Type,
+			Type:               finalType,
 			Disable:            config.Disable,
 			SystemPromptPrefix: config.SystemPromptPrefix,
 			ExtraHeaders:       headers,
