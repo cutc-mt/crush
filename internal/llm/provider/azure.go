@@ -1,7 +1,7 @@
 package provider
 
 import (
-	"fmt" // Import fmt for Sprintf
+	"fmt"
 	"github.com/charmbracelet/crush/internal/config"
 	"github.com/charmbracelet/crush/internal/log"
 	"github.com/openai/openai-go"
@@ -24,12 +24,13 @@ func newAzureClient(opts providerClientOptions) AzureClient {
 	model := opts.model(opts.modelType)
 	deploymentID := model.ID
 
-	// Construct the full base URL including the deployment ID
-	// This is the key change to address the user's problem
-	fullAzureBaseURL := fmt.Sprintf("%s/openai/deployments/%s", opts.baseURL, deploymentID)
+	// Construct the full URL including the deployment ID and API version as a query parameter.
+	// The openai-go client will append "/chat/completions" to this base URL.
+	fullURL := fmt.Sprintf("%s/openai/deployments/%s?api-version=%s", opts.baseURL, deploymentID, apiVersion)
 
 	reqOpts := []option.RequestOption{
-		azure.WithEndpoint(fullAzureBaseURL, apiVersion),
+		option.WithBaseURL(fullURL),
+		azure.WithAPIKey(opts.apiKey),
 	}
 
 	if config.Get().Options.Debug {
@@ -37,10 +38,11 @@ func newAzureClient(opts providerClientOptions) AzureClient {
 		reqOpts = append(reqOpts, option.WithHTTPClient(httpClient))
 	}
 
-	reqOpts = append(reqOpts, azure.WithAPIKey(opts.apiKey))
+	client := openai.NewClient(reqOpts...)
+
 	base := &openaiClient{
 		providerOptions: opts,
-		client:          openai.NewClient(reqOpts...),
+		client:          client,
 	}
 
 	return &azureClient{openaiClient: base}
