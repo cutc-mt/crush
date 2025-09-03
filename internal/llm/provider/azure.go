@@ -24,13 +24,14 @@ func newAzureClient(opts providerClientOptions) AzureClient {
 	model := opts.model(opts.modelType)
 	deploymentID := model.ID
 
-	// Construct the full URL including the deployment ID and API version as a query parameter.
+	// Construct the full base URL without the API version query parameter.
 	// The openai-go client will append "/chat/completions" to this base URL.
-	fullURL := fmt.Sprintf("%s/openai/deployments/%s?api-version=%s", opts.baseURL, deploymentID, apiVersion)
+	fullBaseURL := fmt.Sprintf("%s/openai/deployments/%s", opts.baseURL, deploymentID)
 
 	reqOpts := []option.RequestOption{
-		option.WithBaseURL(fullURL),
+		option.WithBaseURL(fullBaseURL),
 		azure.WithAPIKey(opts.apiKey),
+		option.WithQuery("api-version", apiVersion), // Add API version as a separate query parameter
 	}
 
 	if config.Get().Options.Debug {
